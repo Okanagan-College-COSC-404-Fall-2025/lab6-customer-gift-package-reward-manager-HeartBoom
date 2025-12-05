@@ -1,0 +1,43 @@
+CREATE OR REPLACE TYPE ty_gift_item AS OBJECT (
+    name VARCHAR2(100)
+);
+/
+
+CREATE OR REPLACE TYPE gift_box AS TABLE OF ty_gift_item;
+/
+
+CREATE TABLE gift_catalog (
+    gift_id      NUMBER        PRIMARY KEY,
+    min_purchase NUMBER        NOT NULL,
+    gifts        gift_box
+)
+NESTED TABLE gifts STORE AS nt_gift_storage;
+/
+
+INSERT INTO gift_catalog (gift_id, min_purchase, gifts)
+VALUES (1, 100,
+  gift_box(
+    ty_gift_item('Stickers'),
+    ty_gift_item('Pen Set')
+  )
+);
+
+INSERT INTO gift_catalog (gift_id, min_purchase, gifts)
+VALUES (2, 1000,
+  gift_box(
+    ty_gift_item('Teddy Bear'),
+    ty_gift_item('Mug'),
+    ty_gift_item('Perfume Sample')
+  )
+);
+
+INSERT INTO gift_catalog (gift_id, min_purchase, gifts)
+VALUES (3, 10000,
+  gift_box(
+    ty_gift_item('Backpack'),
+    ty_gift_item('Thermos Bottle'),
+    ty_gift_item('Chocolate Collection')
+  )
+);
+COMMIT;
+/

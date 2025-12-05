@@ -1,0 +1,22 @@
+SET LINESIZE 200
+COLUMN reward_id       FORMAT 9999       HEADING 'Reward ID'
+COLUMN customer_email  FORMAT A30        HEADING 'Customer Email'
+COLUMN gift_id         FORMAT 9999       HEADING 'Gift ID'
+COLUMN min_purchase    FORMAT 999999     HEADING 'Min Purchase'
+COLUMN gift_list       FORMAT A70        HEADING 'Gifts Received'
+COLUMN reward_date     FORMAT A20        HEADING 'Reward Date'
+
+SELECT 
+    cr.reward_id,
+    cr.customer_email,
+    cr.gift_id,
+    gc.min_purchase,
+    LISTAGG(g.name, ', ') 
+        WITHIN GROUP (ORDER BY g.name) AS gift_list,
+    TO_CHAR(cr.reward_date, 'YYYY-MM-DD HH24:MI') AS reward_date
+FROM   customer_rewards cr
+JOIN   gift_catalog gc ON cr.gift_id = gc.gift_id
+CROSS JOIN TABLE(gc.gifts) g
+GROUP BY cr.reward_id, cr.customer_email, cr.gift_id, gc.min_purchase, cr.reward_date
+ORDER BY cr.reward_id
+FETCH FIRST 5 ROWS ONLY;

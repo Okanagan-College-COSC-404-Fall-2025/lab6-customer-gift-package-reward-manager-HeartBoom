@@ -1,0 +1,41 @@
+CREATE OR REPLACE PACKAGE BODY customer_manager AS
+
+  FUNCTION get_total_purchase(p_customer_id NUMBER) RETURN NUMBER IS
+    v_total NUMBER := 0;
+  BEGIN
+    v_total := TRUNC(p_customer_id / 10) * 1500;
+    
+    RETURN v_total;
+  END get_total_purchase;
+
+  PROCEDURE assign_gifts_to_all IS
+  BEGIN
+    DELETE FROM customer_rewards;
+
+    FOR r IN (SELECT 101 AS customer_id, 'alice@example.com'     AS email FROM dual UNION ALL
+              SELECT 102,           'bob@example.org'       FROM dual UNION ALL
+              SELECT 103,           'charlie@domain.com'   FROM dual UNION ALL
+              SELECT 104,           'diana@test.com'       FROM dual UNION ALL
+              SELECT 105,           'eve@sample.net'     FROM dual) LOOP
+
+      DECLARE
+        total_purchase NUMBER := get_total_purchase(r.customer_id);
+        chosen_gift    NUMBER;
+      BEGIN
+        SELECT MAX(gift_id) INTO chosen_gift
+          FROM gift_catalog
+         WHERE min_purchase <= total_purchase;
+
+        IF chosen_gift IS NOT NULL THEN
+          INSERT INTO customer_rewards (customer_email, gift_id)
+          VALUES (r.email, chosen_gift);
+        END IF;
+      END;
+    END LOOP;
+
+    COMMIT;
+    DBMS_OUTPUT.PUT_LINE('Gift assignment completed for all customers.');
+  END assign_gifts_to_all;
+
+END customer_manager;
+/
